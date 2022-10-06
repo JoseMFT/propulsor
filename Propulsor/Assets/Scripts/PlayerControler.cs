@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class PlayerControler: MonoBehaviour {
 
@@ -12,35 +13,30 @@ public class PlayerControler: MonoBehaviour {
     [SerializeField]
     GameObject prefabParticles;
     [SerializeField]
-    float initialImpulse = 15f;
-    float impulse;
+    float impulse = 15f;
     [SerializeField]
     TextMeshProUGUI FuelLeft;
+    float sePuedeMover = 1f;
     [SerializeField]
-    TextMeshProUGUI MoreFuel;
-    [SerializeField]
-    GameObject Fuel;
+    GameObject finalDePartida;
 
     void Start () {
         body = GetComponent<Rigidbody2D> ();
     }
 
-
-
     void Update () {
         combustible = combustible - Time.deltaTime * 0.5f;
         if (combustible > 100f) {
-            FuelLeft.text = "Overfuel";
-            impulse = initialImpulse * 2f;
+            combustible = 100.0f;
         }
         if (combustible <= 100f) {
             FuelLeft.text = combustible.ToString ("00.0") + "%";
-            impulse = initialImpulse;
-
-            direction.x = Input.GetAxis ("Horizontal") * Time.deltaTime * impulse;
-            direction.y = Input.GetAxis ("Vertical") * Time.deltaTime * impulse;
-
-
+            direction.x = Input.GetAxis ("Horizontal") * Time.deltaTime * impulse * sePuedeMover;
+            direction.y = Input.GetAxis ("Vertical") * Time.deltaTime * impulse * sePuedeMover;
+        }
+        if (combustible < 0f) {
+            sePuedeMover = 0f;
+            finalDePartida.SetActive (true);
         }
     }
 
@@ -48,14 +44,19 @@ public class PlayerControler: MonoBehaviour {
         if (choque.tag == "Fuel") {
             combustible = combustible + 15f;
             Debug.Log ("+15 Fuel");
+            sePuedeMover = 1f;
         }
 
         Instantiate (prefabParticles, choque.transform.position, choque.transform.rotation);
-        Destroy (choque.gameObject, 1);
+        Destroy (choque.gameObject);
     }
 
     private void FixedUpdate () {
-
         body.AddForce (direction, ForceMode2D.Impulse);
+    }
+
+    public void ClickEnBoton () {
+        Debug.Log ("Ha clicado");
+        SceneManager.LoadScene (0);
     }
 }
